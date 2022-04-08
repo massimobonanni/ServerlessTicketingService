@@ -9,6 +9,9 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using ServerlessTicketingService.Functions.Requests;
 using ServerlessTicketingService.Functions.Responses;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
+using System.Net;
 
 namespace ServerlessTicketingService.Functions
 {
@@ -21,6 +24,30 @@ namespace ServerlessTicketingService.Functions
             _logger = loggerFactory.CreateLogger<UpdateTicketFunction>();
         }
 
+        [OpenApiOperation(operationId: "updateTicket",
+            new[] { "Ticket Management" },
+            Summary = "Update an existing ticket",
+            Description = "Add a comment to an existing ticket.",
+            Visibility = OpenApiVisibilityType.Important)]
+        [OpenApiParameter("ticketId",
+            Summary = "The id for the ticket to update",
+            Description = "The id for the ticket to update with a comment",
+            In = Microsoft.OpenApi.Models.ParameterLocation.Path,
+            Required = true,
+            Visibility = OpenApiVisibilityType.Important)]
+        [OpenApiRequestBody(contentType: "application/json",
+            bodyType: typeof(UpdateTicketRequest),
+            Description = "The new comment for the existing ticket.",
+            Required = true)]
+        [OpenApiResponseWithBody(HttpStatusCode.OK,
+            "application/json",
+            typeof(UpdateTicketResponse),
+            Summary = "Update an existing ticket response.",
+            Description = "If the request is valid, the response contains the id for the updated ticket.")]
+        [OpenApiResponseWithoutBody(HttpStatusCode.BadRequest,
+            Summary = "The request is not valid",
+            Description = "The contributor mail is not valid or the commenty is not present.")]
+        
         [FunctionName("UpdateTicket")]
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "put", Route = "tickets/{ticketId}")] HttpRequest req,

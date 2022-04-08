@@ -9,6 +9,9 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using ServerlessTicketingService.Functions.Requests;
 using ServerlessTicketingService.Functions.Responses;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
+using System.Net;
 
 namespace ServerlessTicketingService.Functions
 {
@@ -21,6 +24,30 @@ namespace ServerlessTicketingService.Functions
             _logger = loggerFactory.CreateLogger<CloseTicketFunction>();
         }
 
+        [OpenApiOperation(operationId: "closeTicket",
+             new[] { "Ticket Management" },
+             Summary = "Close an existing ticket",
+             Description = "Add a comment to an existing ticket and close it.",
+             Visibility = OpenApiVisibilityType.Important)]
+        [OpenApiParameter("ticketId",
+             Summary = "The id for the ticket to close",
+             Description = "The id for the ticket to close with a comment",
+             In = Microsoft.OpenApi.Models.ParameterLocation.Path,
+             Required = true,
+             Visibility = OpenApiVisibilityType.Important)]
+        [OpenApiRequestBody(contentType: "application/json",
+             bodyType: typeof(CloseTicketRequest),
+             Description = "The new comment for the existing ticket to close.",
+             Required = true)]
+        [OpenApiResponseWithBody(HttpStatusCode.OK,
+             "application/json",
+             typeof(CloseTicketResponse),
+             Summary = "Close an existing ticket response.",
+             Description = "If the request is valid, the response contains the id for the closed ticket.")]
+        [OpenApiResponseWithoutBody(HttpStatusCode.BadRequest,
+             Summary = "The request is not valid",
+             Description = "The contributor mail is not valid or the commenty is not present.")]
+        
         [FunctionName("CloseTicket")]
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "put", Route = "tickets/{ticketId}/close")] HttpRequest req,

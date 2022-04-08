@@ -9,6 +9,9 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using ServerlessTicketingService.Functions.Requests;
 using ServerlessTicketingService.Functions.Responses;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
+using System.Net;
 
 namespace ServerlessTicketingService.Functions
 {
@@ -20,6 +23,26 @@ namespace ServerlessTicketingService.Functions
         {
             _logger = loggerFactory.CreateLogger<GetTicketFunction>();
         }
+
+        [OpenApiOperation(operationId: "getTicket",
+            new[] { "Tickets Search" },
+            Summary = "Retrieve the information about a ticket",
+            Description = "Retrieve details info for an existing ticket.",
+            Visibility = OpenApiVisibilityType.Important)]
+        [OpenApiParameter("ticketId",
+            Summary = "The id for the ticket to retrieve",
+            Description = "The id for the ticket to retrieve",
+            In = Microsoft.OpenApi.Models.ParameterLocation.Path,
+            Required = true,
+            Visibility = OpenApiVisibilityType.Important)]
+        [OpenApiResponseWithBody(HttpStatusCode.OK,
+            "application/json",
+            typeof(GetTicketResponse),
+            Summary = "The ticket details",
+            Description = "If the ticket exists, the response contains the detail of the ticket.")]
+        [OpenApiResponseWithoutBody(HttpStatusCode.NotFound,
+            Summary = "The ticket id doesn't exist",
+            Description = "The ticket with the id used in the request doesn't exist.")]
 
         [FunctionName("GetTicket")]
         public async Task<IActionResult> Run(

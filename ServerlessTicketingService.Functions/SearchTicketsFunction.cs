@@ -10,6 +10,9 @@ using Newtonsoft.Json;
 using ServerlessTicketingService.Functions.Requests;
 using ServerlessTicketingService.Functions.Responses;
 using System.Collections.Generic;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
+using System.Net;
 
 namespace ServerlessTicketingService.Functions
 {
@@ -22,6 +25,30 @@ namespace ServerlessTicketingService.Functions
             _logger = loggerFactory.CreateLogger<SearchTicketsFunction>();
         }
 
+        [OpenApiOperation(operationId: "searchTicket",
+            new[] { "Tickets Search" },
+            Summary = "Search the tickets based on filters",
+            Description = "Retrieve the list of the tickets that verified the filters passed in the query string.",
+            Visibility = OpenApiVisibilityType.Important)]
+        [OpenApiParameter("sender",
+            Summary = "The mail (or part of the mail) of the ticker sender",
+            Description = "The API returns all the tickets that contains the filter in the sender mail",
+            In = Microsoft.OpenApi.Models.ParameterLocation.Query,
+            Required = false,
+            Visibility = OpenApiVisibilityType.Important)]
+        [OpenApiParameter("states",
+            Summary = "The states of the ticker",
+            Description = "The API returns all the tickets that are in one of the state of the filter. For example, 'open|closed' returns all the tickets closed or open.",
+            In = Microsoft.OpenApi.Models.ParameterLocation.Query,
+            Required = false,
+            Visibility = OpenApiVisibilityType.Important)]
+        [OpenApiResponseWithBody(HttpStatusCode.OK,
+            "application/json",
+            typeof(SearchTicketsResponse),
+            Summary = "The list of the tickets that verify the filters passed in the request",
+            Description = "The response contains the list of the tickets searched by the filters you pass in the quary string and the filters themself.")]
+        
+        
         [FunctionName("SearchTickets")]
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = "tickets")] HttpRequest req)
