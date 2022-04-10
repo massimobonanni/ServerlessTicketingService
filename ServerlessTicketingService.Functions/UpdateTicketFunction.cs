@@ -44,6 +44,9 @@ namespace ServerlessTicketingService.Functions
             typeof(UpdateTicketResponse),
             Summary = "Update an existing ticket response.",
             Description = "If the request is valid, the response contains the id for the updated ticket.")]
+        [OpenApiResponseWithoutBody(HttpStatusCode.NotFound,
+            Summary = "The ticket doesn't exist",
+            Description = "The ticket id doesn't belong to an existing ticket.")]
         [OpenApiResponseWithoutBody(HttpStatusCode.BadRequest,
             Summary = "The request is not valid",
             Description = "The contributor mail is not valid or the commenty is not present.")]
