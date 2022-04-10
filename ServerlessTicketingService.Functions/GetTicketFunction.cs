@@ -12,6 +12,10 @@ using ServerlessTicketingService.Functions.Responses;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using System.Net;
+using ServerlessTicketingService.Functions.Entities;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Newtonsoft.Json.Linq;
+using ServerlessTicketingService.Functions.Entities.Models;
 
 namespace ServerlessTicketingService.Functions
 {
@@ -47,16 +51,31 @@ namespace ServerlessTicketingService.Functions
         [FunctionName("GetTicket")]
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = "tickets/{ticketId}")] HttpRequest req,
-            string ticketId)
+            string ticketId,
+            [DurableClient] IDurableEntityClient client)
         {
             _logger.LogInformation("GetTicket function");
             IActionResult responseData = null;
 
             try
             {
-                var response = new TicketDTO() { Id = ticketId };
+                var entityId = new EntityId(nameof(TicketEntity), ticketId);
 
-                responseData = new OkObjectResult(response);
+                EntityStateResponse<JObject> entity = await client.ReadEntityStateAsync<JObject>(entityId);
+                if (entity.EntityExists)
+                {
+                    var ticketProperty = (JObject)entity.EntityState.Property("Ticket").Value;
+                    var response = ticketProperty.ToObject<TicketDTO>();
+                    var ticketStatus = (TicketStatus)(int)ticketProperty.Property("Status").Value;
+                    response.Status = ticketStatus.ToString();
+                    response.Id = ticketId;
+
+                    responseData = new OkObjectResult(response);
+                }
+                else
+                {
+                    responseData = new NotFoundResult();
+                }
             }
             catch
             {

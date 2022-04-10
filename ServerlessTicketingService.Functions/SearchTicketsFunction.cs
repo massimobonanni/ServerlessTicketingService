@@ -13,6 +13,11 @@ using System.Collections.Generic;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using System.Net;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using ServerlessTicketingService.Functions.Entities;
+using Newtonsoft.Json.Linq;
+using ServerlessTicketingService.Functions.Entities.Models;
+using System.Linq;
 
 namespace ServerlessTicketingService.Functions
 {
@@ -47,11 +52,12 @@ namespace ServerlessTicketingService.Functions
             typeof(SearchTicketsResponse),
             Summary = "The list of the tickets that verify the filters passed in the request",
             Description = "The response contains the list of the tickets searched by the filters you pass in the quary string and the filters themself.")]
-        
-        
+
+
         [FunctionName("SearchTickets")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "tickets")] HttpRequest req)
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "tickets")] HttpRequest req,
+            [DurableClient] IDurableEntityClient client)
         {
             _logger.LogInformation("SearchTickets function");
             IActionResult responseData = null;
@@ -66,10 +72,45 @@ namespace ServerlessTicketingService.Functions
                     SenderFilter = senderFilter,
                     StatesFilter = statesFilter
                 };
-                response.Tickets = new List<TicketDTO>() {
-                    new TicketDTO() { Id = Guid.NewGuid().ToString() },
-                    new TicketDTO() { Id = Guid.NewGuid().ToString() },
+
+                EntityQuery queryDefinition = new EntityQuery()
+                {
+                    PageSize = 100,
+                    FetchState = true,
+                    EntityName = nameof(TicketEntity)
                 };
+
+                var tickets = new List<TicketDTO>();
+                do
+                {
+                    EntityQueryResult queryResult = await client.ListEntitiesAsync(queryDefinition, default);
+
+                    foreach (var item in queryResult.Entities)
+                    {
+                        var entityState = (JObject)item.State;
+                        var ticketProperty = (JObject)entityState.Property("Ticket").Value;
+                        var ticket = ticketProperty.ToObject<TicketDTO>();
+                        var ticketStatus = (TicketStatus)(int)ticketProperty.Property("Status").Value;
+                        ticket.Status = ticketStatus.ToString();
+                        ticket.Id = item.EntityId.EntityKey;
+                        tickets.Add(ticket);
+                    }
+
+                    queryDefinition.ContinuationToken = queryResult.ContinuationToken;
+                } while (queryDefinition.ContinuationToken != null);
+
+                var filteredTickets = tickets.AsQueryable();
+                if (!string.IsNullOrEmpty(senderFilter))
+                {
+                    filteredTickets = filteredTickets.Where(t => t.SenderEmail.Contains(senderFilter));
+                }
+                if (!string.IsNullOrEmpty(statesFilter))
+                {
+                    var states = statesFilter.ToLower().Split('|');
+                    filteredTickets = filteredTickets.Where(t => states.Contains(t.Status.ToLower()));
+                }
+
+                response.Tickets = filteredTickets.ToList();
 
                 responseData = new OkObjectResult(response);
             }
