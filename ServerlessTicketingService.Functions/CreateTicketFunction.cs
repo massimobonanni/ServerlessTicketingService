@@ -12,6 +12,9 @@ using ServerlessTicketingService.Functions.Responses;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using System.Net;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using ServerlessTicketingService.Functions.Entities;
+using ServerlessTicketingService.Functions.Entities.Dtos;
 
 namespace ServerlessTicketingService.Functions
 {
@@ -41,10 +44,11 @@ namespace ServerlessTicketingService.Functions
         [OpenApiResponseWithoutBody(HttpStatusCode.BadRequest,
             Summary = "The request is not valid",
             Description = "The sender mail is not valid or the summary is not present.")]
-        
+
         [FunctionName("CreateTicket")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = "tickets")] HttpRequest req)
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = "tickets")] HttpRequest req,
+            [DurableClient] IDurableEntityClient client)
         {
             _logger.LogInformation("CreateTicket function");
             IActionResult responseData = null;
@@ -54,11 +58,24 @@ namespace ServerlessTicketingService.Functions
                 string payloadContent = await new StreamReader(req.Body).ReadToEndAsync();
                 var request = JsonConvert.DeserializeObject<NewTicketRequest>(payloadContent);
 
-                if (request!=null && request.IsValid())
+                if (request != null && request.IsValid())
                 {
+                    var ticketId = Guid.NewGuid().ToString();
+                    var entityId = new EntityId(nameof(TicketEntity), ticketId);
+                    
+                    var ticketInfo = new NewTicketInfo()
+                    {
+                        Description = request.Description,
+                        Summary = request.Summary,
+                        SenderEmail = request.SenderEmail,
+                        Timestamp = request.Timestamp
+                    };
+                    
+                    await client.SignalEntityAsync<ITicket>(entityId, e => e.Initialize(ticketInfo));
+                    
                     var response = new NewTicketResponse()
                     {
-                        TicketId = Guid.NewGuid().ToString()
+                        TicketId = ticketId
                     };
 
                     responseData = new OkObjectResult(response);

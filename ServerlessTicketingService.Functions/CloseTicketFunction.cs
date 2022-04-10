@@ -12,6 +12,10 @@ using ServerlessTicketingService.Functions.Responses;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using System.Net;
+using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using ServerlessTicketingService.Functions.Entities;
+using Newtonsoft.Json.Linq;
+using ServerlessTicketingService.Functions.Entities.Dtos;
 
 namespace ServerlessTicketingService.Functions
 {
@@ -44,6 +48,9 @@ namespace ServerlessTicketingService.Functions
              typeof(CloseTicketResponse),
              Summary = "Close an existing ticket response.",
              Description = "If the request is valid, the response contains the id for the closed ticket.")]
+        [OpenApiResponseWithoutBody(HttpStatusCode.NotFound,
+            Summary = "The ticket doesn't exist",
+            Description = "The ticket id doesn't belong to an existing ticket.")]
         [OpenApiResponseWithoutBody(HttpStatusCode.BadRequest,
              Summary = "The request is not valid",
              Description = "The contributor mail is not valid or the commenty is not present.")]
@@ -51,7 +58,8 @@ namespace ServerlessTicketingService.Functions
         [FunctionName("CloseTicket")]
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "put", Route = "tickets/{ticketId}/close")] HttpRequest req,
-            string ticketId)
+            string ticketId,
+            [DurableClient] IDurableEntityClient client)
         {
             _logger.LogInformation("CloseTicket function");
             IActionResult responseData = null;
@@ -63,13 +71,31 @@ namespace ServerlessTicketingService.Functions
 
                 if (request != null && request.IsValid())
                 {
+                    var entityId = new EntityId(nameof(TicketEntity), ticketId);
 
-                    var response = new CloseTicketResponse()
+                    EntityStateResponse<JObject> entity = await client.ReadEntityStateAsync<JObject>(entityId);
+                    if (entity.EntityExists)
                     {
-                        TicketId = ticketId
-                    };
+                        var ticketUpdate = new UpdateTicketInfo()
+                        {
+                            Comment = request.Comment,
+                            ContributorEmail = request.ContributorEmail,
+                            Timestamp = request.Timestamp
+                        };
 
-                    responseData = new OkObjectResult(response);
+                        await client.SignalEntityAsync<ITicket>(entityId, e => e.Close(ticketUpdate));
+
+                        var response = new CloseTicketResponse()
+                        {
+                            TicketId = ticketId
+                        };
+
+                        responseData = new OkObjectResult(response);
+                    }
+                    else
+                    {
+                        responseData = new NotFoundResult();
+                    }
                 }
                 else
                 {
