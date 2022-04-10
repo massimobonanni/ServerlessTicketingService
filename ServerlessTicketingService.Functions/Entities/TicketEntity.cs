@@ -3,6 +3,7 @@ using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 using ServerlessTicketingService.Functions.Entities.Dtos;
 using ServerlessTicketingService.Functions.Entities.Models;
+using ServerlessTicketingService.Functions.Orchestrators.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +29,9 @@ namespace ServerlessTicketingService.Functions.Entities
             if (ticketUpdate == null)
                 return;
 
-            UpdateTicket(ticketUpdate,TicketStatus.Closed);
+            var oldStatus = this.Ticket.Status;
+            UpdateTicket(ticketUpdate, TicketStatus.Closed);
+            NotifyUpdate(ticketUpdate, oldStatus);
         }
 
         public void Initialize(NewTicketInfo ticket)
@@ -53,10 +56,11 @@ namespace ServerlessTicketingService.Functions.Entities
         {
             if (ticketUpdate == null)
                 return;
-            
-            UpdateTicket(ticketUpdate, TicketStatus.InProgress);
-        }
 
+            var oldStatus = this.Ticket.Status;
+            UpdateTicket(ticketUpdate, TicketStatus.InProgress);
+            NotifyUpdate(ticketUpdate, oldStatus);
+        }
 
         private void UpdateTicket(UpdateTicketInfo ticketUpdate, TicketStatus newStatus)
         {
@@ -75,6 +79,25 @@ namespace ServerlessTicketingService.Functions.Entities
 
             this.Ticket.LastUpdateTimestamp = this.Ticket.Updates.Max(u => u.Timestamp);
             this.Ticket.Status = newStatus;
+        }
+
+        private void NotifyUpdate(UpdateTicketInfo ticketUpdate, TicketStatus oldStatus)
+        {
+            var orchestratyorDto = new TicketUpdateNotificationDto()
+            {
+                TicketId = Entity.Current.EntityKey,
+                CreationTimestamp = this.Ticket.CreationTimestamp,
+                LastUpdateTimestamp = this.Ticket.LastUpdateTimestamp,
+                Description = this.Ticket.Description,
+                LastUpdateComment = ticketUpdate.Comment,
+                LastUpdateContributorEmail = ticketUpdate.ContributorEmail,
+                OldStatus = oldStatus.ToString(),
+                NewStatus = this.Ticket.Status.ToString(),
+                SenderEmail = this.Ticket.SenderEmail,
+                Summary = this.Ticket.Summary
+            };
+
+            Entity.Current.StartNewOrchestration("TicketUpdateOrchestrator", orchestratyorDto);
         }
 
         [FunctionName(nameof(TicketEntity))]
