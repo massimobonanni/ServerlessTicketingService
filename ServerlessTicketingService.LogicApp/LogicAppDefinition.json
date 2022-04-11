@@ -1,0 +1,167 @@
+{
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "actions": {
+      "Condition": {
+        "actions": {
+          "Send_an_email_(V2)_2": {
+            "inputs": {
+              "body": {
+                "Body": "<p>Your ticket '@{body('Create_object_from_data_field_of_event_payload')?['Summary']}' was closed by @{body('Create_object_from_data_field_of_event_payload')?['LastUpdateContributorEmail']} on @{body('Create_object_from_data_field_of_event_payload')?['LastUpdateTimestamp']}.</p>",
+                "Importance": "High",
+                "Subject": "Ticket @{body('Create_object_from_data_field_of_event_payload')?['TicketId']}closed",
+                "To": "@body('Create_object_from_data_field_of_event_payload')?['SenderEmail']"
+              },
+              "host": {
+                "connection": {
+                  "name": "@parameters('$connections')['office365']['connectionId']"
+                }
+              },
+              "method": "post",
+              "path": "/v2/Mail"
+            },
+            "runAfter": {},
+            "type": "ApiConnection"
+          }
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": [
+                "@body('Create_object_from_data_field_of_event_payload')?['NewStatus']",
+                "Closed"
+              ]
+            }
+          ]
+        },
+        "runAfter": {
+          "Send_an_email_(V2)": [
+            "Succeeded"
+          ]
+        },
+        "type": "If"
+      },
+      "Create_object_from_data_field_of_event_payload": {
+        "inputs": {
+          "content": "@triggerBody()?['data']",
+          "schema": {
+            "properties": {
+              "CreationTimestamp": {
+                "type": "string"
+              },
+              "Description": {
+                "type": "string"
+              },
+              "LastUpdateComment": {
+                "type": "string"
+              },
+              "LastUpdateContributorEmail": {
+                "type": "string"
+              },
+              "LastUpdateTimestamp": {
+                "type": "string"
+              },
+              "NewStatus": {
+                "type": "string"
+              },
+              "OldStatus": {
+                "type": "string"
+              },
+              "SenderEmail": {
+                "type": "string"
+              },
+              "Summary": {
+                "type": "string"
+              },
+              "TicketId": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "runAfter": {},
+        "type": "ParseJson"
+      },
+      "Send_an_email_(V2)": {
+        "inputs": {
+          "body": {
+            "Body": "<p>Hi, @{body('Create_object_from_data_field_of_event_payload')?['SenderEmail']},<br>\nyour ticket '@{body('Create_object_from_data_field_of_event_payload')?['Summary']}' has changed on @{body('Create_object_from_data_field_of_event_payload')?['LastUpdateTimestamp']}.<br>\n@{body('Create_object_from_data_field_of_event_payload')?['LastUpdateContributorEmail']} added the comment '@{body('Create_object_from_data_field_of_event_payload')?['LastUpdateComment']}'</p>",
+            "Subject": "Ticket '@{body('Create_object_from_data_field_of_event_payload')?['Summary']}' has changed",
+            "To": "@body('Create_object_from_data_field_of_event_payload')?['SenderEmail']"
+          },
+          "host": {
+            "connection": {
+              "name": "@parameters('$connections')['office365']['connectionId']"
+            }
+          },
+          "method": "post",
+          "path": "/v2/Mail"
+        },
+        "runAfter": {
+          "Create_object_from_data_field_of_event_payload": [
+            "Succeeded"
+          ]
+        },
+        "type": "ApiConnection"
+      }
+    },
+    "contentVersion": "1.0.0.0",
+    "outputs": {},
+    "parameters": {
+      "$connections": {
+        "defaultValue": {},
+        "type": "Object"
+      }
+    },
+    "triggers": {
+      "When_a_resource_event_occurs": {
+        "inputs": {
+          "body": {
+            "properties": {
+              "destination": {
+                "endpointType": "webhook",
+                "properties": {
+                  "endpointUrl": "@{listCallbackUrl()}"
+                }
+              },
+              "filter": {
+                "includedEventTypes": [
+                  "ticketUpdate"
+                ]
+              },
+              "topic": "/subscriptions/b68ed859-8021-4876-8179-8dc97208bc2c/resourceGroups/ServerlessTicketingService-rg/providers/Microsoft.EventGrid/topics/ServerlessTicketingServiceTopic"
+            }
+          },
+          "host": {
+            "connection": {
+              "name": "@parameters('$connections')['azureeventgrid']['connectionId']"
+            }
+          },
+          "path": "/subscriptions/@{encodeURIComponent('b68ed859-8021-4876-8179-8dc97208bc2c')}/providers/@{encodeURIComponent('Microsoft.EventGrid.Topics')}/resource/eventSubscriptions",
+          "queries": {
+            "x-ms-api-version": "2017-06-15-preview"
+          }
+        },
+        "splitOn": "@triggerBody()",
+        "type": "ApiConnectionWebhook"
+      }
+    }
+  },
+  "parameters": {
+    "$connections": {
+      "value": {
+        "azureeventgrid": {
+          "connectionId": "/subscriptions/b68ed859-8021-4876-8179-8dc97208bc2c/resourceGroups/ServerlessTicketingService-rg/providers/Microsoft.Web/connections/azureeventgrid",
+          "connectionName": "azureeventgrid",
+          "id": "/subscriptions/b68ed859-8021-4876-8179-8dc97208bc2c/providers/Microsoft.Web/locations/northeurope/managedApis/azureeventgrid"
+        },
+        "office365": {
+          "connectionId": "/subscriptions/b68ed859-8021-4876-8179-8dc97208bc2c/resourceGroups/ServerlessTicketingService-rg/providers/Microsoft.Web/connections/office365-1",
+          "connectionName": "office365-1",
+          "id": "/subscriptions/b68ed859-8021-4876-8179-8dc97208bc2c/providers/Microsoft.Web/locations/northeurope/managedApis/office365"
+        }
+      }
+    }
+  }
+}
