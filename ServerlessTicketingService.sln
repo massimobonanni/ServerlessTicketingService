@@ -5,6 +5,11 @@ VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerlessTicketingService.Functions", "ServerlessTicketingService.Functions\ServerlessTicketingService.Functions.csproj", "{EBB23B4A-34D6-44AB-AA96-281AA45398D1}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ServerlessTicketingService.LogicApp", "ServerlessTicketingService.LogicApp", "{E4F18F5F-C435-489D-98A4-4E44A272CA1D}"
+	ProjectSection(SolutionItems) = preProject
+		ServerlessTicketingService.LogicApp\LogicAppDefinition.json = ServerlessTicketingService.LogicApp\LogicAppDefinition.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
