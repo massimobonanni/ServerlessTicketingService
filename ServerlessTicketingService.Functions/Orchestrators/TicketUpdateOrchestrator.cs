@@ -24,6 +24,8 @@ namespace ServerlessTicketingService.Functions.Orchestrators
 
             var saveTicketResponse = await context.CallActivityAsync<bool>("SaveTicketToDatabaseActivity", ticket);
 
+            if (saveTicketResponse)
+                await context.CallActivityAsync("NotifyUpdateActivity", ticket);
         }
     }
 }
