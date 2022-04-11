@@ -28,7 +28,7 @@ namespace ServerlessTicketingService.Functions.Entities
             if (ticketUpdate == null)
                 return;
 
-            UpdateTicket(ticketUpdate,TicketStatus.Closed);
+            UpdateTicket(ticketUpdate, TicketStatus.Closed);
         }
 
         public void Initialize(NewTicketInfo ticket)
@@ -53,18 +53,18 @@ namespace ServerlessTicketingService.Functions.Entities
         {
             if (ticketUpdate == null)
                 return;
-            
+
             UpdateTicket(ticketUpdate, TicketStatus.InProgress);
         }
 
 
-        private void UpdateTicket(UpdateTicketInfo ticketUpdate, TicketStatus newStatus)
+        private bool UpdateTicket(UpdateTicketInfo ticketUpdate, TicketStatus newStatus)
         {
             if (this.Ticket == null || this.Ticket.Status == TicketStatus.Closed)
-                return;
+                return false;
 
             if (this.Ticket.LastUpdateTimestamp > ticketUpdate.Timestamp)
-                return;
+                return false;
 
             this.Ticket.Updates.Add(new TicketUpdateData()
             {
@@ -75,6 +75,7 @@ namespace ServerlessTicketingService.Functions.Entities
 
             this.Ticket.LastUpdateTimestamp = this.Ticket.Updates.Max(u => u.Timestamp);
             this.Ticket.Status = newStatus;
+            return true;
         }
 
         [FunctionName(nameof(TicketEntity))]
