@@ -7,7 +7,7 @@ The Codemotion EDU-Path is composed by 10 episode, you can find the source code 
 
 1) <a href="https://github.com/massimobonanni/ServerlessTicketingService/tree/01-Start" target="_blank">Branch 01-Start</a> the initial project (<a href="https://talks.codemotion.com/architettura-della-soluzione-tools-e-cre?playlist=realizzare-un-sistema-di-gestione-ticket-1" target="_blank">episode 2</a>)
 
-2) <a href="https://github.com/massimobonanni/ServerlessTicketingService/tree/02-API_Rest" target="_blank">Branch 02-API_Rest</a> implementation of the frontend APIs for tickets management(<a href="https://talks.codemotion.com/implementare-le-rest-api-di-gestione-dei?playlist=realizzare-un-sistema-di-gestione-ticket-1" target="_blank">episode 3</a>)
+2) <a href="https://github.com/massimobonanni/ServerlessTicketingService/tree/02-API_Rest" target="_blank">Branch 02-API_Rest</a> implementation of the frontend APIs for tickets management (<a href="https://talks.codemotion.com/implementare-le-rest-api-di-gestione-dei?playlist=realizzare-un-sistema-di-gestione-ticket-1" target="_blank">episode 3</a>)
 
 3) <a href="https://github.com/massimobonanni/ServerlessTicketingService/tree/03-OpenAPI" target="_blank">Branch 03-OpenApi</a> adding the REST API documentation using OpenAPI package for Azure Functions (<a href="https://talks.codemotion.com/documentare-le-api-di-gestione-dei-ticke?playlist=realizzare-un-sistema-di-gestione-ticket-1" target="_blank">episode 4</a>)
 
