@@ -1,0 +1,21 @@
+﻿{
+  "id": "b98f0ca5-28ce-4194-9b26-d39bfafe450d",
+  "subject": "tickets/6b1289a4-16a3-49c9-9d2e-8bde3043afe2",
+  "data": {
+    "TicketId": "6b1289a4-16a3-49c9-9d2e-8bde3043afe2",
+    "SenderEmail": "sender@mail.com",
+    "CreationTimestamp": "2022-04-10T15:49:00+00:00",
+    "OldStatus": "InProgress",
+    "NewStatus": "InProgress",
+    "Summary": "Sample ticket",
+    "Description": "This is a sample ticket",
+    "LastUpdateComment": "This comment is an update",
+    "LastUpdateContributorEmail": "contributor@mail.com",
+    "LastUpdateTimestamp": "2022-04-10T19:40:00+00:00"
+  },
+  "eventType": "ticketUpdate",
+  "dataVersion": "1.0",
+  "metadataVersion": "1",
+  "eventTime": "2022-04-11T15:41:34.5562792Z",
+  "topic": "/subscriptions/b68ed859-8021-4876-8179-8dc97208bc2c/resourceGroups/ServerlessTicketingService-rg/providers/Microsoft.EventGrid/topics/ServerlessTicketingServiceTopic"
+}

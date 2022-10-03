@@ -1,0 +1,35 @@
+﻿using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Newtonsoft.Json;
+using System;
+using System.Text.RegularExpressions;
+
+namespace ServerlessTicketingService.Functions.Requests
+{
+    public class UpdateTicketRequest
+    {
+        [OpenApiProperty(Description = "The mail of the user that update the ticket")]
+        [JsonProperty("contributorEmail")]
+        public string ContributorEmail { get; set; }
+
+        [OpenApiProperty(Description = "The date and time when the ticket was updated")]
+        [JsonProperty("timestamp")]
+        public DateTimeOffset Timestamp { get; set; }
+
+        [OpenApiProperty(Description = "The comment to add to the ticket")]
+        [JsonProperty("comment")]
+        public string Comment { get; set; }
+
+        internal bool IsValid()
+        {
+            bool retVal = true;
+            retVal &= !string.IsNullOrWhiteSpace(Comment);
+            retVal &= !string.IsNullOrWhiteSpace(ContributorEmail);
+
+            Regex regex = new Regex(@"^([\w\.\-]+)@([\w\-]+)((\.(\w){2,3})+)$");
+            Match match = regex.Match(ContributorEmail);
+            retVal &= match.Success;
+
+            return retVal;
+        }
+    }
+}
