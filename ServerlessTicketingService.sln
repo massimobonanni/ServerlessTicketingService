@@ -10,6 +10,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ServerlessTicketingService.
 		ServerlessTicketingService.LogicApp\LogicAppDefinition.json = ServerlessTicketingService.LogicApp\LogicAppDefinition.json
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ServerlessTicketingService.IaC", "ServerlessTicketingService.IaC", "{CAC94D5D-8106-4F73-9D00-28DC444445DB}"
+	ProjectSection(SolutionItems) = preProject
+		ServerlessTicketingService.IaC\main.bicep = ServerlessTicketingService.IaC\main.bicep
+		ServerlessTicketingService.IaC\README.md = ServerlessTicketingService.IaC\README.md
+		ServerlessTicketingService.IaC\resources.bicep = ServerlessTicketingService.IaC\resources.bicep
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
