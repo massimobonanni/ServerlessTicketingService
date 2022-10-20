@@ -6,77 +6,24 @@ param location string = resourceGroup().location
 @minLength(3)
 param environmentName string = 'sts${uniqueString(resourceGroup().id)}'
 
+@description('EventGrid viewer web site endopint for event grid subscription')
+param eventGridViewerEndpointUrl string
+
 var keyVaultName = toLower('${environmentName}-kv')
 
 //-------------------------------------------------------------
-// EventGrid Event Viewer
+// EventGrid Event Viewer Subscription
 //-------------------------------------------------------------
-var eventViewerAppName =toLower('${environmentName}-eventviewer')
-var eventViewerAppPlanName=toLower('${environmentName}-eventviewerplan')
 var eventViewerSubName=toLower('${environmentName}-eventviewersub')
-var viewerRepoUrl = 'https://github.com/azure-samples/azure-event-grid-viewer.git'
-
-resource eventViewerAppServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
-  name: eventViewerAppPlanName
-  location: location
-  sku: {
-    name: 'F1'
-    tier: 'Free'
-    size: 'F1'
-    family: 'F'
-    capacity: 0
-  }
-  properties: {}
-  kind: 'app'
-}
-
-resource eventViewerAppService 'Microsoft.Web/sites@2022-03-01' = {
-  name: eventViewerAppName
-  location: location
-  kind: 'app'
-  properties: {
-    serverFarmId: eventViewerAppServicePlan.id
-    hostNameSslStates: [
-      {
-        hostType: 'Standard'
-        sslState: 'Disabled'
-        name: '${eventViewerAppName}.azurewebsites.net'
-      }
-      {
-        hostType: 'Standard'
-        sslState: 'Disabled'
-        name: '${eventViewerAppName}.scm.azurewebsites.net'
-      }
-    ]
-    siteConfig: {
-      ftpsState: 'FtpsOnly'
-      minTlsVersion: '1.2'
-    }
-    httpsOnly: true
-  }
-}
-
-resource eventViewerAppServiceDeploy 'Microsoft.Web/sites/sourcecontrols@2022-03-01' = {
-  parent: eventViewerAppService
-  name: 'web'
-  properties: {
-    repoUrl: viewerRepoUrl
-    branch: 'main'
-    isManualIntegration: true
-  }
-}
 
 resource eventViewerSubscription 'Microsoft.EventGrid/eventSubscriptions@2022-06-15' = {
   name: eventViewerSubName
   scope: eventGridTopic
-  dependsOn:[
-    eventViewerAppServiceDeploy
-  ]
   properties: {
     destination: {
       endpointType: 'WebHook'
       properties: {
-        endpointUrl: 'https://${eventViewerAppService.properties.defaultHostName}/api/updates'
+        endpointUrl: eventGridViewerEndpointUrl
       }
     }
   }

@@ -16,11 +16,21 @@ resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-01-01' = {
   location: location
 }
 
+module eventGridViewer 'eventGridViewer.bicep' = {
+  scope: resourceGroup
+  name: 'eventGridViewer'
+  params: {
+    location: location
+    environmentName: environmentName
+  }
+}
+
 module resourcesModule 'resources.bicep' = {
   scope: resourceGroup
   name: 'resources'
   params: {
     location: location
     environmentName: environmentName
+    eventGridViewerEndpointUrl: eventGridViewer.outputs.eventGridViewerSubscriptionEndpoint
   }
 }
