@@ -33,7 +33,6 @@ az deployment group create --resource-group <resource group name> --template-fil
 ```
 
 where 
-- `<your region>` is the location where you want to create the deployment
 - `<resource group name>` is the name of the resource group in which you want to deploy the event grid viewer
 
 You can also set these parameters:
