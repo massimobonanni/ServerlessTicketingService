@@ -41,5 +41,5 @@ You can also set these parameters:
 - `environmentName` : the prefix used to create all the resources in the resource group. By default it is setted to 'sts' with a unique value.
 
 ```
-az deployment sub create --resource-group <resource group name> --template-file main.bicep --parameters location=<location to deploy> environmentName=<env name>
+az deployment group create --resource-group <resource group name> --template-file eventGridViewer.bicep --parameters location=<location to deploy> environmentName=<env name>
 ```

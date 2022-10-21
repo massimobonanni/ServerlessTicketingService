@@ -1,4 +1,4 @@
-@description('The location wher you want to create the resources.')
+@description('The location where you want to create the resources.')
 param location string = resourceGroup().location
 
 @description('The name of the environment. It will be used to create the name of the resources in the resource group.')
