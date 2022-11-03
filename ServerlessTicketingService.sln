@@ -12,6 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ServerlessTicketingService.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ServerlessTicketingService.IaC", "ServerlessTicketingService.IaC", "{CAC94D5D-8106-4F73-9D00-28DC444445DB}"
 	ProjectSection(SolutionItems) = preProject
+		ServerlessTicketingService.IaC\eventGridViewer.bicep = ServerlessTicketingService.IaC\eventGridViewer.bicep
 		ServerlessTicketingService.IaC\main.bicep = ServerlessTicketingService.IaC\main.bicep
 		ServerlessTicketingService.IaC\README.md = ServerlessTicketingService.IaC\README.md
 		ServerlessTicketingService.IaC\resources.bicep = ServerlessTicketingService.IaC\resources.bicep
