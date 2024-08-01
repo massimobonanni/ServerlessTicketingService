@@ -46,10 +46,15 @@ resource dataStorageAccount 'Microsoft.Storage/storageAccounts@2021-04-01' = {
   }
 }
 
+resource tableService 'Microsoft.Storage/storageAccounts/tableServices@2022-05-01' = {
+  name: 'default'
+  parent: dataStorageAccount
+}
+
 resource dataTable 'Microsoft.Storage/storageAccounts/tableServices/tables@2022-05-01'= { 
-  name: '${dataStorageAccount.name}/default/Tickets'
+  name: 'Tickets'
+  parent: tableService
   properties:{
-    
   }
 }
 
